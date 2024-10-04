@@ -1,7 +1,29 @@
 import azure.functions as func
 import logging
+import requests
+import json
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
+
+
+
+def exchange_auth_code(auth_code):
+    url = 'https://api.instagram.com/oauth/access_token'
+    payload = {
+        'client_id': '<YOUR_CLIENT_ID>',
+        'client_secret': '<YOUR_CLIENT_SECRET>',
+        'grant_type': 'authorization_code',
+        'redirect_uri': 'https://<your-storage-account-name>.z13.web.core.windows.net/oauth/callback.html',
+        'code': auth_code
+    }
+
+    response = requests.post(url, data=payload)
+
+    if response.status_code == 200:
+        return response.json()  # This contains the access token
+    else:
+        return None
+
 
 @app.route(route="instagramcallback")
 def instagramcallback(req: func.HttpRequest) -> func.HttpResponse:
